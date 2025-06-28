@@ -1,0 +1,22 @@
+Scenario 2: LogTransaction — audit log insert on transaction insert
+
+CREATE OR REPLACE TRIGGER LogTransaction
+AFTER INSERT ON transactions
+FOR EACH ROW
+BEGIN
+  INSERT INTO audit_log(
+    transaction_id,
+    account_id,
+    amount,
+    operation_time,
+    operation_type
+  )
+  VALUES (
+    :NEW.transaction_id,
+    :NEW.account_id,
+    :NEW.amount,
+    SYSDATE,
+    'INSERT'
+  );
+END;
+/
