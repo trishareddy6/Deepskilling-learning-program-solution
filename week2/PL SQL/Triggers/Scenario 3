@@ -1,0 +1,26 @@
+Scenario 3: CheckTransactionRules — enforce business rules on deposits and withdrawals
+
+CREATE OR REPLACE TRIGGER CheckTransactionRules
+BEFORE INSERT ON transactions
+FOR EACH ROW
+DECLARE
+  v_balance NUMBER;
+BEGIN
+  -- Check deposit is positive
+  IF :NEW.transaction_type = 'DEPOSIT' THEN
+    IF :NEW.amount <= 0 THEN
+      RAISE_APPLICATION_ERROR(-20001, 'Deposit amount must be positive.');
+    END IF;
+
+  ELSIF :NEW.transaction_type = 'WITHDRAWAL' THEN
+    -- Check sufficient funds
+    SELECT balance INTO v_balance FROM accounts WHERE account_id = :NEW.account_id;
+
+    IF :NEW.amount > v_balance THEN
+      RAISE_APPLICATION_ERROR(-20002, 'Insufficient balance for withdrawal.');
+    ELSIF :NEW.amount <= 0 THEN
+      RAISE_APPLICATION_ERROR(-20003, 'Withdrawal amount must be positive.');
+    END IF;
+  END IF;
+END;
+/
