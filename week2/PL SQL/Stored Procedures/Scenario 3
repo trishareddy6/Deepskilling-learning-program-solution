@@ -1,0 +1,36 @@
+Scenario 3: TransferFunds — Transfer money between two accounts with balance check
+
+CREATE OR REPLACE PROCEDURE TransferFunds(
+  p_from_account IN accounts.account_id%TYPE,
+  p_to_account   IN accounts.account_id%TYPE,
+  p_amount       IN NUMBER
+) IS
+  v_balance NUMBER;
+BEGIN
+  -- Check source account balance
+  SELECT balance INTO v_balance FROM accounts WHERE account_id = p_from_account;
+
+  IF v_balance < p_amount THEN
+    RAISE_APPLICATION_ERROR(-20001, 'Insufficient funds in the source account.');
+  END IF;
+
+  -- Deduct from source account
+  UPDATE accounts
+  SET balance = balance - p_amount
+  WHERE account_id = p_from_account;
+
+  -- Add to destination account
+  UPDATE accounts
+  SET balance = balance + p_amount
+  WHERE account_id = p_to_account;
+
+  COMMIT;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RAISE_APPLICATION_ERROR(-20002, 'One or both accounts not found.');
+  WHEN OTHERS THEN
+    ROLLBACK;
+    RAISE;
+END TransferFunds;
+/
