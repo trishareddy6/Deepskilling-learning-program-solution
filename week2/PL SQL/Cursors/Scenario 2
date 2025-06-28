@@ -1,0 +1,17 @@
+Scenario 2: ApplyAnnualFee — Deduct annual fee from all accounts
+
+DECLARE
+  CURSOR ApplyAnnualFee IS
+    SELECT account_id, balance FROM accounts;
+
+  v_fee CONSTANT NUMBER := 50;
+BEGIN
+  FOR rec IN ApplyAnnualFee LOOP
+    UPDATE accounts
+    SET balance = balance - v_fee
+    WHERE account_id = rec.account_id;
+  END LOOP;
+
+  COMMIT;
+END;
+/
