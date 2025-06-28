@@ -1,0 +1,10 @@
+Scenario 1: CalculateAge — Calculate customer's age in years based on DOB
+
+CREATE OR REPLACE FUNCTION CalculateAge(p_dob DATE) RETURN NUMBER IS
+  v_age NUMBER;
+BEGIN
+  -- Calculate age in years by subtracting DOB from current date
+  v_age := FLOOR(MONTHS_BETWEEN(SYSDATE, p_dob) / 12);
+  RETURN v_age;
+END CalculateAge;
+/
