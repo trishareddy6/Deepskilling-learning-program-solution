@@ -1,0 +1,23 @@
+Scenario 3: Ensure data integrity when adding a new customer.
+CREATE OR REPLACE PROCEDURE AddNewCustomer(
+  p_customer_id IN customers.customer_id%TYPE,
+  p_name        IN customers.name%TYPE
+) IS
+BEGIN
+  INSERT INTO customers(customer_id, name)
+  VALUES (p_customer_id, p_name);
+
+  COMMIT;
+
+EXCEPTION
+  WHEN DUP_VAL_ON_INDEX THEN
+    -- Duplicate primary key (customer_id)
+    INSERT INTO error_log(error_time, error_msg)
+    VALUES(SYSDATE, 'AddNewCustomer failed: Customer ID ' || p_customer_id || ' already exists.');
+    ROLLBACK;
+  WHEN OTHERS THEN
+    INSERT INTO error_log(error_time, error_msg)
+    VALUES(SYSDATE, 'AddNewCustomer error: ' || SQLERRM);
+    ROLLBACK;
+END AddNewCustomer;
+/
