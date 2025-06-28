@@ -1,0 +1,44 @@
+Scenario 1: Group all customer-related procedures and functions into a package.
+
+CREATE OR REPLACE PACKAGE CustomerManagement AS
+  PROCEDURE AddCustomer(p_customer_id IN NUMBER, p_name IN VARCHAR2, p_dob IN DATE);
+  PROCEDURE UpdateCustomerDetails(p_customer_id IN NUMBER, p_name IN VARCHAR2, p_dob IN DATE);
+  FUNCTION GetCustomerBalance(p_customer_id IN NUMBER) RETURN NUMBER;
+END CustomerManagement;
+/
+
+Package Body
+CREATE OR REPLACE PACKAGE BODY CustomerManagement AS
+
+  PROCEDURE AddCustomer(p_customer_id IN NUMBER, p_name IN VARCHAR2, p_dob IN DATE) IS
+  BEGIN
+    INSERT INTO customers(customer_id, name, dob)
+    VALUES (p_customer_id, p_name, p_dob);
+    COMMIT;
+  END AddCustomer;
+
+  PROCEDURE UpdateCustomerDetails(p_customer_id IN NUMBER, p_name IN VARCHAR2, p_dob IN DATE) IS
+  BEGIN
+    UPDATE customers
+    SET name = p_name,
+        dob = p_dob
+    WHERE customer_id = p_customer_id;
+    COMMIT;
+  END UpdateCustomerDetails;
+
+  FUNCTION GetCustomerBalance(p_customer_id IN NUMBER) RETURN NUMBER IS
+    v_balance NUMBER;
+  BEGIN
+    SELECT SUM(balance)
+    INTO v_balance
+    FROM accounts
+    WHERE customer_id = p_customer_id;
+
+    RETURN NVL(v_balance, 0);
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RETURN 0;
+  END GetCustomerBalance;
+
+END CustomerManagement;
+/
