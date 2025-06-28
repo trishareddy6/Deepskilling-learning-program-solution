@@ -1,0 +1,28 @@
+Scenario 1: GenerateMonthlyStatements — Print all transactions for current month grouped by customer
+
+DECLARE
+  CURSOR GenerateMonthlyStatements IS
+    SELECT customer_id, transaction_id, transaction_date, amount
+    FROM transactions
+    WHERE TRUNC(transaction_date, 'MM') = TRUNC(SYSDATE, 'MM')
+    ORDER BY customer_id, transaction_date;
+
+  v_customer_id transactions.customer_id%TYPE := NULL;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Monthly Statements for ' || TO_CHAR(SYSDATE, 'Month YYYY'));
+  DBMS_OUTPUT.PUT_LINE('------------------------------------');
+
+  FOR rec IN GenerateMonthlyStatements LOOP
+    -- Print customer header when customer changes
+    IF v_customer_id IS NULL OR v_customer_id != rec.customer_id THEN
+      v_customer_id := rec.customer_id;
+      DBMS_OUTPUT.PUT_LINE('Customer ID: ' || v_customer_id);
+    END IF;
+
+    -- Print transaction details
+    DBMS_OUTPUT.PUT_LINE('  Transaction ID: ' || rec.transaction_id ||
+                         ', Date: ' || TO_CHAR(rec.transaction_date, 'DD-MON-YYYY') ||
+                         ', Amount: ' || TO_CHAR(rec.amount, 'FM$999,999.00'));
+  END LOOP;
+END;
+/
