@@ -1,0 +1,31 @@
+Scenario 2: Manage errors when updating employee salaries.
+CREATE OR REPLACE PROCEDURE UpdateSalary(
+  p_employee_id IN employees.employee_id%TYPE,
+  p_percentage  IN NUMBER
+) IS
+  v_rows_updated NUMBER;
+BEGIN
+  UPDATE employees
+  SET salary = salary * (1 + p_percentage/100)
+  WHERE employee_id = p_employee_id;
+
+  v_rows_updated := SQL%ROWCOUNT;
+
+  IF v_rows_updated = 0 THEN
+    -- No employee with this ID found
+    RAISE NO_DATA_FOUND;
+  END IF;
+
+  COMMIT;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    INSERT INTO error_log(error_time, error_msg)
+    VALUES(SYSDATE, 'UpdateSalary failed: Employee ID ' || p_employee_id || ' not found.');
+    ROLLBACK;
+  WHEN OTHERS THEN
+    INSERT INTO error_log(error_time, error_msg)
+    VALUES(SYSDATE, 'UpdateSalary error: ' || SQLERRM);
+    ROLLBACK;
+END UpdateSalary;
+/
