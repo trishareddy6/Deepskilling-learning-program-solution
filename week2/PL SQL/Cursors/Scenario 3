@@ -1,0 +1,25 @@
+Scenario 3: UpdateLoanInterestRates — Update interest rates for all loans based on new policy
+
+DECLARE
+  CURSOR UpdateLoanInterestRates IS
+    SELECT loan_id, loan_type FROM loans FOR UPDATE;
+
+  v_new_rate NUMBER;
+BEGIN
+  FOR rec IN UpdateLoanInterestRates LOOP
+    IF rec.loan_type = 'HOME' THEN
+      v_new_rate := 6.5;
+    ELSIF rec.loan_type = 'CAR' THEN
+      v_new_rate := 7.0;
+    ELSE
+      v_new_rate := 8.0;
+    END IF;
+
+    UPDATE loans
+    SET interest_rate = v_new_rate
+    WHERE loan_id = rec.loan_id;
+  END LOOP;
+
+  COMMIT;
+END;
+/
