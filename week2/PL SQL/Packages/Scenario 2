@@ -1,0 +1,40 @@
+Scenario 2: Create a package to manage employee data.
+
+CREATE OR REPLACE PACKAGE EmployeeManagement AS
+  PROCEDURE HireEmployee(p_employee_id IN NUMBER, p_name IN VARCHAR2, p_salary IN NUMBER, p_department_id IN NUMBER);
+  PROCEDURE UpdateEmployeeDetails(p_employee_id IN NUMBER, p_name IN VARCHAR2, p_salary IN NUMBER);
+  FUNCTION CalculateAnnualSalary(p_employee_id IN NUMBER) RETURN NUMBER;
+END EmployeeManagement;
+/
+
+Package Body
+CREATE OR REPLACE PACKAGE BODY EmployeeManagement AS
+
+  PROCEDURE HireEmployee(p_employee_id IN NUMBER, p_name IN VARCHAR2, p_salary IN NUMBER, p_department_id IN NUMBER) IS
+  BEGIN
+    INSERT INTO employees(employee_id, name, salary, department_id)
+    VALUES (p_employee_id, p_name, p_salary, p_department_id);
+    COMMIT;
+  END HireEmployee;
+
+  PROCEDURE UpdateEmployeeDetails(p_employee_id IN NUMBER, p_name IN VARCHAR2, p_salary IN NUMBER) IS
+  BEGIN
+    UPDATE employees
+    SET name = p_name,
+        salary = p_salary
+    WHERE employee_id = p_employee_id;
+    COMMIT;
+  END UpdateEmployeeDetails;
+
+  FUNCTION CalculateAnnualSalary(p_employee_id IN NUMBER) RETURN NUMBER IS
+    v_salary NUMBER;
+  BEGIN
+    SELECT salary INTO v_salary FROM employees WHERE employee_id = p_employee_id;
+    RETURN v_salary * 12;  -- assuming salary is monthly
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RETURN 0;
+  END CalculateAnnualSalary;
+
+END EmployeeManagement;
+/
