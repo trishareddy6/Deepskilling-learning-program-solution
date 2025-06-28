@@ -1,0 +1,40 @@
+Scenario 1:Handle exceptions during fund transfers between accounts.
+CREATE OR REPLACE PROCEDURE SafeTransferFunds(
+  p_from_account IN accounts.account_id%TYPE,
+  p_to_account   IN accounts.account_id%TYPE,
+  p_amount       IN NUMBER
+) IS
+  v_balance NUMBER;
+BEGIN
+  -- Check if source account has enough balance
+  SELECT balance INTO v_balance FROM accounts WHERE account_id = p_from_account;
+
+  IF v_balance < p_amount THEN
+    RAISE_APPLICATION_ERROR(-20001, 'Insufficient funds in source account.');
+  END IF;
+
+  -- Deduct amount from source account
+  UPDATE accounts
+  SET balance = balance - p_amount
+  WHERE account_id = p_from_account;
+
+  -- Add amount to target account
+  UPDATE accounts
+  SET balance = balance + p_amount
+  WHERE account_id = p_to_account;
+
+  COMMIT;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    -- Account not found
+    INSERT INTO error_log(error_time, error_msg)
+    VALUES(SYSDATE, 'Account not found in SafeTransferFunds: ' || SQLERRM);
+    ROLLBACK;
+  WHEN OTHERS THEN
+    -- Other errors (including insufficient funds)
+    INSERT INTO error_log(error_time, error_msg)
+    VALUES(SYSDATE, 'Error in SafeTransferFunds: ' || SQLERRM);
+    ROLLBACK;
+END SafeTransferFunds;
+/
