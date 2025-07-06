@@ -1,0 +1,51 @@
+<!-- applicationContext.xml -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans 
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context 
+         http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- Enable component scanning for com.library package -->
+    <context:component-scan base-package="com.library" />
+
+</beans>
+
+package com.library.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class BookService {
+    public void issueBook() {
+        System.out.println("Book has been issued.");
+    }
+}
+
+package com.library.repository;
+
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class BookRepository {
+    public void saveBook() {
+        System.out.println("Book saved to repository.");
+    }
+}
+
+package com.library;
+
+import com.library.service.BookService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class LibraryManagementApplication {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+
+        BookService bookService = context.getBean(BookService.class);
+        bookService.issueBook();
+    }
+}
