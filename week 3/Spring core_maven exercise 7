@@ -1,0 +1,66 @@
+package com.library.service;
+
+import com.library.repository.BookRepository;
+
+public class BookService {
+    private String serviceName;
+    private BookRepository bookRepository;
+
+    // Constructor for injection
+    public BookService(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    // Setter for BookRepository (Setter Injection)
+    public void setBookRepository(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
+
+    public void issueBook() {
+        System.out.println(serviceName + ": Book has been issued.");
+        bookRepository.saveBook();
+    }
+}
+
+package com.library.repository;
+
+public class BookRepository {
+    public void saveBook() {
+        System.out.println("Book saved to repository.");
+    }
+}
+
+<!-- applicationContext.xml -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans 
+         http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- BookRepository Bean -->
+    <bean id="bookRepository" class="com.library.repository.BookRepository"/>
+
+    <!-- BookService Bean with Constructor and Setter Injection -->
+    <bean id="bookService" class="com.library.service.BookService">
+        <!-- Constructor injection -->
+        <constructor-arg value="LibraryService"/>
+
+        <!-- Setter injection -->
+        <property name="bookRepository" ref="bookRepository"/>
+    </bean>
+</beans>
+
+package com.library;
+
+import com.library.service.BookService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class LibraryManagementApplication {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+
+        BookService bookService = (BookService) context.getBean("bookService");
+        bookService.issueBook();
+    }
+}
